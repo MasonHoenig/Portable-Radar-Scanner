@@ -1,123 +1,127 @@
-import processing.serial.*; // imports library for serial communication
-import java.awt.event.KeyEvent; // imports library for reading the data from the serial port
+import processing.serial.*;
+import java.awt.event.KeyEvent;
 import java.io.IOException;
-Serial myPort; // defines Object Serial
-// defubes variables
+
+Serial myPort;
+
 String angle="";
 String distance="";
 String data="";
 String noObject;
 float pixsDistance;
 int iAngle, iDistance;
-int index1=0;
-int index2=0;
+int index=0;
 float maxDistance = 75;
-PFont orcFont;
+
 void setup() {
- 
- size (1200, 700); // ***CHANGE THIS TO YOUR SCREEN RESOLUTION***
- smooth();
- myPort = new Serial(this,"COM3", 115200); // starts the serial communication
- myPort.bufferUntil('.'); // reads the data from the serial port up to the character '.'. So actually it reads this: angle,distance.
+  size(1200, 700);
+  smooth();
+  delay(2000);
+  try {
+    myPort = new Serial(this, "COM3", 115200);
+    myPort.bufferUntil('.');
+  } catch (Exception e) {
+    println("Could not open COM3: " + e.getMessage());
+  }
 }
+
 void draw() {
-  
   fill(98,245,31);
-  // simulating motion blur and slow fade of the moving line
   noStroke();
   fill(0,4); 
   rect(0, 0, width, height-height*0.065); 
   
   fill(98,245,31); // green color
-  // calls the functions for drawing the radar
   drawRadar(); 
   drawLine();
   drawObject();
   drawText();
 }
-void serialEvent (Serial myPort) { // starts reading data from the Serial Port
-  // reads the data from the Serial Port up to the character '.' and puts it into the String variable "data".
-  data = myPort.readStringUntil('.');
-  if(data != null) {
-    data = data.substring(0,data.length()-1);
-    index1 = data.indexOf(","); // find the character ',' and puts it into the variable "index1"
-    angle= data.substring(0, index1); // read the data from position "0" to position of the variable index1 or thats the value of the angle the Arduino Board sent into the Serial Port
-    distance= data.substring(index1+1, data.length()); // read the data from position "index1" to the end of the data pr thats the value of the distance
-    // converts the String variables into Integer
-    iAngle = int(angle);
-    iDistance = int(distance);
+
+void serialEvent(Serial myPort) {
+  try {
+    data = myPort.readStringUntil('.');
+    if (data != null) {
+      data = data.substring(0,data.length()-1);
+      index = data.indexOf(",");
+      angle= data.substring(0, index);
+      distance= data.substring(index+1, data.length());
+      iAngle = int(angle);
+      iDistance = int(distance);
+    }
+  } catch (Exception e) {
+    println("Serial read error: " + e.getMessage());
   }
 }
+
+boolean outOfRange() {
+  return iDistance < 0 || iDistance > maxDistance;
+}
+
 void drawRadar() {
   pushMatrix();
-  translate(width/2,height-height*0.074); // moves the starting coordinats to new location
+  translate(width/2,height-height*0.074);
   noFill();
   strokeWeight(2);
   stroke(98,245,31);
-  // draws the arc lines
-  arc(0,0,(width-width*0.0625),(width-width*0.0625),PI,TWO_PI);
-  arc(0,0,(width-width*0.27),(width-width*0.27),PI,TWO_PI);
-  arc(0,0,(width-width*0.479),(width-width*0.479),PI,TWO_PI);
-  arc(0,0,(width-width*0.687),(width-width*0.687),PI,TWO_PI);
-  // draws the angle lines
+  float[] arcSizes = {0.0625, 0.27, 0.479, 0.687};
+  for (float s : arcSizes) {
+    arc(0, 0, width - width*s, width - width*s, PI, TWO_PI);
+  }
   line(-width/2,0,width/2,0);
-  line(0,0,(-width/2)*cos(radians(30)),(-width/2)*sin(radians(30)));
-  line(0,0,(-width/2)*cos(radians(60)),(-width/2)*sin(radians(60)));
-  line(0,0,(-width/2)*cos(radians(90)),(-width/2)*sin(radians(90)));
-  line(0,0,(-width/2)*cos(radians(120)),(-width/2)*sin(radians(120)));
-  line(0,0,(-width/2)*cos(radians(150)),(-width/2)*sin(radians(150)));
+  int[] angles = {30, 60, 90, 120, 150};
+  for (int a : angles) {
+    line(0, 0, (-width/2)*cos(radians(a)), (-width/2)*sin(radians(a)));
+  }
   line((-width/2)*cos(radians(30)),0,width/2,0);
   popMatrix();
 }
+
 void drawObject() {
   pushMatrix();
   translate(width/2,height-height*0.074);
-  strokeWeight(9); //<>//
-  if(iDistance > 0 && iDistance < maxDistance) {
-    stroke(255,10,10); //Red Line
+  strokeWeight(9);
+  
+  if(!outOfRange()) {
+    stroke(255,10,10); //red color
     pixsDistance = iDistance*((height-height*0.1666)*(1.0/maxDistance)); 
     line(pixsDistance*cos(radians(iAngle)),-pixsDistance*sin(radians(iAngle)),(width-width*0.505)*cos(radians(iAngle)),-(width-width*0.505)*sin(radians(iAngle)));
   }
   else {
-  stroke(98,245,31); //Green line
+    stroke(98,245,31); //green color
     line(0,0,(width-width*0.505)*cos(radians(iAngle)),-(width-width*0.505)*sin(radians(iAngle)));
   }
-    
+  
   popMatrix();
 }
+
 void drawLine() {
   pushMatrix();
   strokeWeight(9);
   stroke(30,250,60);
-  translate(width/2,height-height*0.074); // moves the starting coordinats to new location
-  line(0,0,(height-height*0.12)*cos(radians(iAngle)),-(height-height*0.12)*sin(radians(iAngle))); // draws the line according to the angle
+  translate(width/2,height-height*0.074);
+  line(0,0,(height-height*0.12)*cos(radians(iAngle)),-(height-height*0.12)*sin(radians(iAngle)));
   popMatrix();
 }
-void drawText() { // draws the texts on the screen
-  
+
+void drawText() {
   pushMatrix();
-  if(iDistance == -1 || iDistance > maxDistance) {
-    noObject = "Out of Range";
-  }
-  else {
-    noObject = "In Range";
-  }
+  
   fill(0,0,0);
   noStroke();
   rect(0, height-height*0.0648, width, height);
   fill(98,245,31);
   textSize(25);
   
-  text((int)(maxDistance * 0.25) + "cm", width-width*0.3854, height-height*0.0833);
-  text((int)(maxDistance * 0.5)  + "cm", width-width*0.281,  height-height*0.0833);
-  text((int)(maxDistance * 0.75) + "cm", width-width*0.177,  height-height*0.0833);
-  text((int)(maxDistance) + "cm", width-width*0.0729, height-height*0.0833);
+  float[] labelPositions = {0.3854, 0.281, 0.177, 0.0729};
+  for (int i = 0; i < 4; i++) {
+    text((int)(maxDistance * (i+1) * 0.25) + "cm", width - width*labelPositions[i], height - height*0.0833);
+  }
   
   textSize(40);
-  text("Angle: " + iAngle + " °", width-width*0.48, height-height*0.0277);
   
-  if(iDistance == -1 || iDistance > maxDistance) {
-    text("Distance: ", width-width*0.26, height-height*0.0277);
+  if(outOfRange()) {
+    text("Distance: " + "     " + "cm", width-width*0.26, height-height*0.0277);
   } else {
     text("Distance: " + iDistance + " cm", width-width*0.26, height-height*0.0277);
   }
