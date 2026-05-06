@@ -113,7 +113,7 @@ void drawText() {
   fill(98,245,31);
   textSize(25);
   
-  float[] labelPositions = {0.3854, 0.281, 0.177, 0.0729};
+  float[] labelPositions = {0.395, 0.29, 0.185, 0.081};
   for (int i = 0; i < 4; i++) {
     text((int)(maxDistance * (i+1) * 0.25) + "cm", width - width*labelPositions[i], height - height*0.0833);
   }
@@ -121,10 +121,11 @@ void drawText() {
   textSize(40);
   
   if(outOfRange()) {
-    text("Distance: " + "     " + "cm", width-width, height-height*0.01);
+    text("Distance: " + "      " + "cm", width-width * 0.6, height-height*0.015);
   } else {
-    text("Distance: " + iDistance + " cm", width-width, height-height*0.01);
+    text("Distance: " + iDistance + " cm", width-width * 0.6, height-height*0.015);
   }
+  
   textSize(25);
   fill(98,245,60);
   translate((width-width*0.4994)+width/2*cos(radians(30)),(height-height*0.0907)-width/2*sin(radians(30)));
