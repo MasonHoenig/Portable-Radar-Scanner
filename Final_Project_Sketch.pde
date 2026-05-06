@@ -121,9 +121,9 @@ void drawText() {
   textSize(40);
   
   if(outOfRange()) {
-    text("Distance: " + "     " + "cm", width-width*0.26, height-height*0.0277);
+    text("Distance: " + "     " + "cm", width-width, height-height*0.01);
   } else {
-    text("Distance: " + iDistance + " cm", width-width*0.26, height-height*0.0277);
+    text("Distance: " + iDistance + " cm", width-width, height-height*0.01);
   }
   textSize(25);
   fill(98,245,60);
