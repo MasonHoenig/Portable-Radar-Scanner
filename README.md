@@ -7,10 +7,10 @@ A portable radar detection system built with an Arduino Uno and an HC-SR04 ultra
 - 180° sweep using a servo motor mounted HC-SR04 ultrasonic sensor
 - Real-time radar-style visualization in a Java application
 - Distance-based RGB LED feedback:
-  - 🔴 **Red** — object within 25 cm
-  - 🟢 **Green** — object 26–50 cm away
-  - 🔵 **Blue** — object over 50 cm away
-  - ⚪ **White** — no object detected
+  - **Red** — object within 25 cm
+  - **Green** — object 26–50 cm away
+  - **Blue** — object over 50 cm away
+  - **White** — no object detected
 
 ## Tech Stack
 
